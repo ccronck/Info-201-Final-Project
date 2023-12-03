@@ -1,0 +1,144 @@
+---
+title: "Final Project Report"
+author: "Calista Cronck"
+date: "2023-12-03"
+output: html_document
+---
+
+```{r}
+library(readr)
+sea_weather <- read_delim("project-data/seattle-weather.csv")
+head(sea_weather)
+```
+
+```{r}
+burke <- read_delim("project-data/Burke_Gilman_Trail_Counter.csv")
+```
+
+```{r}
+library(lubridate)
+# convert date column from chr to mdy format (same format as sea_weather)
+burke$Date <- as.Date(burke$Date, format = "%m/%d/%Y")
+# change column names so they don't have spaces
+colnames(burke) <- c("Date", "Total", "PedS", "PedN", "BikeN", "BikeS")
+head(burke)
+```
+
+```{r}
+library(dplyr)
+# sum traffic counts by date
+burke <- burke %>%
+    group_by(Date) %>%
+    summarize(
+        total_bikes = sum(BikeN + BikeS, na.rm = TRUE),
+        total_peds = sum(PedN + PedS, na.rm = TRUE),
+        total_traffic = sum(Total, na.rm = TRUE)
+    )
+head(burke)
+```
+
+```{r}
+# merge datasets together by date
+merged_data <- inner_join(burke, sea_weather, by = c("Date" = "date"))
+# made the capitalization of variable names the same
+colnames(merged_data)[1] <- "date"
+merged_data
+```
+
+```{r}
+merged_data <- merged_data %>% 
+  mutate(
+    # create median temperature variable
+    # create season variable
+    season = case_when(
+      month(date) %in% c(3, 4, 5) ~ "Spring",
+      month(date) %in% c(6, 7, 8) ~ "Summer",
+      month(date) %in% c(9, 10, 11) ~ "Autumn",
+      month(date) %in% c(12, 1, 2) ~ "Winter",
+      TRUE ~ NA_character_
+    ),
+    # create precipitation category variable
+    precip_category = case_when(
+      precipitation == 0 ~ "No Rain",
+      precipitation > 0 & precipitation <= 5 ~ "Light Rain",
+      TRUE ~ "Heavy Rain"
+    ),
+    # create wind category variable
+    wind_category = case_when(
+      wind < 5 ~ "Calm",
+      wind >= 5 & wind < 15 ~ "Moderate",
+      TRUE ~ "Strong"
+    ),
+    # create traffic category variable
+    traffic_category = case_when(
+      total_traffic < 500 ~ "Low Traffic",
+      total_traffic >= 500 & total_traffic < 1000 ~ "Medium Traffic",
+      TRUE ~ "High Traffic"
+    )
+  )
+head(merged_data)
+```
+
+```{r}
+library(purrr)
+# create a median temperature variable
+calculate_daily_median_temp <- function(max_temp, min_temp) {
+  median(c(max_temp, min_temp), na.rm = TRUE)
+}
+
+merged_data <- merged_data %>%
+  mutate(
+    median_temp = pmap_dbl(list(temp_max, temp_min), calculate_daily_median_temp)
+  )
+
+head(merged_data)
+```
+
+```{r}
+# summarized
+summarized_data <- merged_data %>% 
+  group_by(date) %>% 
+  summarize(
+    total_bikes,
+    total_peds,
+    total_traffic,
+    traffic_category,
+    season,
+    weather,
+    precip_category,
+    wind_category,
+    median_temp
+  )
+head(summarized_data)
+```
+
+```{r}
+library(ggplot2)
+ggplot(merged_data, aes(x = weather, y = total_traffic)) +
+    geom_point() +
+    labs(title = "Total Traffic vs. Weather",
+         x = "Weather (°C)",
+         y = "Total Traffic Count")
+```
+
+```{r}
+average_traffic_by_season <- merged_data %>%
+    group_by(season) %>%
+    summarize(average_traffic = mean(total_traffic, na.rm = TRUE))
+
+ggplot(average_traffic_by_season,
+       aes(x = season, y = average_traffic, fill = season)) +
+    geom_bar(stat = "identity") +
+    labs(title = "Average Total Traffic by Season",
+         x = "Season",
+         y = "Average Total Traffic")
+```
+
+```{r}
+average_traffic <- merged_data %>%
+    group_by(season, precip_category) %>%
+    summarize(average_traffic = mean(total_traffic, na.rm = TRUE))
+
+average_traffic
+```
+
