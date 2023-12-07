@@ -1,0 +1,81 @@
+---
+title: "Data Documentation"
+author: "Vusala Zakizade, Isabella Cheng, Calista Cronck"
+date: "2023-12-08"
+output: html_document
+---
+
+### Data Sources
+
+The original data used in our dataset comes from the "Burke Gilman Trail north
+of NE 70th St Bicycle and Pedestrian Counter" dataset, retrieved from [Seattle Open Data](https://data.seattle.gov/Transportation/Burke-Gilman-Trail-north-of-NE-70th-St-Bicycle-and/2z5v-ecg8),
+and the "seattle-weather" dataset, from [Kaggle](https://www.kaggle.com/datasets/mahdiehhajian/seattle-weather).
+The trail counter data was provided by the City of Seattle, and it is unknown who
+collected the weather data.
+
+### Variables in this Dataset
+**date** (date) -
+The date data was collected.
+
+**total_bikes** (dbl) -
+The total number of bicyclists recorded traveling, in both north and south
+directions, in one day.
+
+**total_peds** (dbl) -
+The total number of pedestrians recorded traveling, in both north and south
+directions, in one day.
+
+**total_traffic** (dbl) -
+The total number of bicyclists and pedestrians recorded traveling, in both north
+and south directions, in one day. This field adds together data from the
+total_bikes and total_peds variables.
+
+**precipitation** (dbl) -
+The amount of precipitation recorded in one day. Units and methods of collection
+are unknown.
+
+**temp_max** (dbl) -
+The maximum temperature recorded in one day. Units and methods of collection are
+unknown.
+
+**temp_min** (dbl) -
+The minimum temperature recorded in one day. Units and methods of collection are
+unknown.
+
+**wind** (dbl) -
+The wind speed recorded in one day. Units and methods of collection are unknown.
+
+**weather** (chr) -
+Categorizes the weather recorded in one day as 'rain,' 'sun,' 'fog,' 'drizzle,'
+or 'snow.'
+
+**precip_category** (chr) -
+Classifies the amount of precipitation recorded in one day as 'No Rain,' 'Light
+Rain,' or 'Heavy Rain.' This field uses data from the precipitation variable.
+
+**wind_category** (chr) -
+Classifies the amount of wind recorded in one day as 'Calm,' 'Moderate,' or
+'Strong.' This field uses data from the wind variable.
+
+**traffic_category** (chr) -
+Classifies the total number of bicyclists and
+pedestrians recorded traveling in both directions in one day as 'Low Traffic,'
+'Medium Traffic,' or 'High Traffic.' This field uses data from the total_traffic
+variable.
+
+**median_temp** (dbl) -
+Finds the median temperature from the minimum and maximum temperatures recorded
+in one day. This field uses data from the temp_max and temp_min variables.
+
+### Summary Statistics
+#### Dimensions
+Total columns - 14
+
+Total rows - 730
+
+#### Missing and invalid values by column
+total_bikes - 22
+
+total_peds - 22
+
+total_traffic - 22
