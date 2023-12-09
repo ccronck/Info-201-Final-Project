@@ -10,4 +10,4 @@ Our analysis of the trail and weather data reveals that seasonal variations exer
 
 Our goal in analyzing this data is to provide insight into how seasonal and weather changes impact the commuter flow on Seattle’s trails. This information can be used as a means of increasing weather resilience among local commuters and as a way to argue for more effective weather-proofing measures on Seattle’s trails. This would entail having more consistently well-lit trails, increasing overhead coverage, and maintaining trail safety, cleanliness, and accessibility regardless of weather conditions.
 
-![](../../readme-graph.png)
+<img width="712" alt="readme-graph" src="https://github.com/ccronck/Info-201-Final-Project/assets/152589109/93f7753f-a4a0-4d41-86a2-5e0107a0e759">
