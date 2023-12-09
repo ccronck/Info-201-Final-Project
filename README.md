@@ -9,3 +9,5 @@ Because these datasets exclusively use statistics from the Burke Gilman Trail tr
 Our analysis of the trail and weather data reveals that seasonal variations exert a stronger influence compared to holiday dates, as holiday trends often align with seasonal patterns. Also, weather emerges as a key factor affecting biking behaviors, possibly due to commuters seeking alternative transportation options during adverse weather conditions, such as rain, snow, or low temperatures. When people encounter unfavorable weather, the likelihood that they venture outdoors decreases significantly
 
 Our goal in analyzing this data is to provide insight into how seasonal and weather changes impact the commuter flow on Seattle’s trails. This information can be used as a means of increasing weather resilience among local commuters and as a way to argue for more effective weather-proofing measures on Seattle’s trails. This would entail having more consistently well-lit trails, increasing overhead coverage, and maintaining trail safety, cleanliness, and accessibility regardless of weather conditions.
+
+![](../../readme-graph.png)
