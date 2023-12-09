@@ -1,0 +1,312 @@
+---
+title: "Weather & Commuting in Seattle"
+author: "Vusala Zakizadde, Isabella Cheng, Calista Cronck"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE,
+                  	warning = FALSE)
+```
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(purrr)
+library(lubridate)
+```
+
+### Introduction
+We are combining the “Burke Gilman Trail north of NE 70th St Bicycle and Pedestrian Counter” and “Seattle-weather” datasets. The Burke Gilman dataset has been collected by the government, and we accessed it through data.seattle.gov. Unfortunately, we were unable to find who collected the Seattle weather dataset, but we accessed it through Kaggle. We thought these two datasets would be very interesting to combine because they will give us comprehensive insights into how the weather conditions in Seattle impact activities such as biking and walking outdoors. Additionally, our target audience is local residents and commuters of Seattle who are directly impacted by the weather, bike and pedestrian traffic. We also thought it might be helpful for the UW students, staff, and faculty since the trail runs through the campus.
+
+Based on general media and literature, we know that Seattle is known for its frequent rains. A lot of people like to bike or walk in Seattle. The city is even ranked third among large U.S. cities in terms of bike-friendliness. One of the famous paths in Seattle is the popular Burke-Gilman Trail that many people use daily. But some people prefer taking the bus or driving instead of biking or walking. Research shows the impact of the weather in Seattle by showing a 40.9% decrease in the number of people walking on the Elliott Bay Trail, and a 42.7% decrease in biking on rainy days despite the number of bikers and walkers in Seattle. These statistics show that there is a noticeable drop when the weather is rainy in Seattle.
+
+Our own analysis will show us if there is any decrease in trail usage on the Burke Gilman on rainy days in Seattle. It is very important to understand how the weather impacts people, considering the large student population at the University of Washington, and all the big companies with thousands of employees in the vicinity. If we find out the weather significantly reduces biking and walking, then universities, companies, and the city might need to consider providing public transportation options, enhancing existing services during times, or increasing weather-proof trail infrastructure.
+
+Based on our analysis of the trail and weather data, our team wants the audience to know whether different weather conditions and temperatures in Seattle affect people's travel and what kind of impact they have. We came up with some research questions to answer that:
+
+* How do different types of precipitation (like rain, fog, drizzle, sun) impact the amount of commuters in a day?
+
+* How does the temperature affect the amount of commuters (like a hot rainy day vs a cold rainy day, a hot sunny day vs a cold sunny day)?
+
+* How do major holidays affect the commuter flow? Are there certain holidays that have greater effects than others?
+
+The analysis of the impact of the weather on bike and pedestrian traffic on the Burke Gilman Trail which is a very popular and often used trail in Seattle is both captivating and significant for the people living in Seattle and those who commute. Our analysis and report will help them to understand the influence of weather so that they can make better commuting decisions. The analysis can be also very helpful for students and employees who commute to schools and workplaces in Seattle. Our report can help them with planning their schedules. Educational institutions and employers could also utilize this information to gain insights into attendance patterns and potentially provide flexibility on these days. Additionally, the city could use this data to encourage commuting by bike and foot year-round, regardless of weather.
+
+### Explanation of Data
+#### Original Datasets
+We are using the Burke Gilman Trail and Seattle weather datasets because we want local residents and commuters in Seattle to know more about not only how weather affects traffic, but also because this is a topic that is relevant to the daily lives of many of our peers. We live in an area with a very high rate of people who commute by bike or on foot. While we do not personally bike or walk on our commutes, it is likely that many of our friends, family, or peers are directly impacted by this topic. The Burke Gilman Trail in particular is of interest to us, as it directly passes through our campus, and is very well-known and well-used among UW Seattle’s students, staff, and faculty.
+
+The dataset “Burke Gilman Trail north of NE 70th St Bicycle and Pedestrian Counter” originates from Seattle Open Data, and was collected by the City of Seattle. The “Seattle-weather” dataset originates from Kaggle and was posted by user Mahdieh Hajian, but it is unclear if this is who actually collected the data.
+
+Both of these datasets are freely available to everyone because anyone with a link can view these datasets. Researchers, residents, and students who are interested in finding traffic data and weather data can use these datasets without limitations for non-commercial use. The openness can help people find valuable information about traffic patterns and weather conditions in Seattle. Because of this unrestricted access, the datasets are transparent, which helps people to inform their decision-making and seek to leverage better transportation systems and urban living in Seattle.
+
+The dataset “Burke Gilman Trail north of NE 70th St Bicycle and Pedestrian Counter” shows the number of bicycles and pedestrians on Burke Gilman Trail north of NE 70th St every hour from Jan 4, 2014, to Jan 1, 2019. The population would likely refer to all the cyclists and pedestrians using the Burke Gilman Trail north of NE 70th St in Seattle. The sample of this dataset was collected from the bicycle and pedestrian counter. Separate volumes are tallied for each travel mode. The counters also capture the direction of travel, either north or south, for both bikes and pedestrians. The only potentially missing data we encountered in this dataset was from November 15 to December 6th, 2015, where the traffic counts were all zero (except 2 pedestrians recorded on one of the days in this period). It is unclear why the data from this period was recorded this way, whether due to faulty recording, trail closure, or genuine lack of traffic.
+
+The dataset “Seattle-weather” is about all weather-related data points collected within the geographical area of Seattle, including precipitation, temperature max and temperature min, wind speed, and weather like drizzle, rain, and so on. The sample of this dataset is the weather data collected every day from weather stations or sources within the Seattle area, from January 1, 2012, to December 31, 2015. As the collection source of this dataset is not explicitly stated on its Kaggle posting, we are unable to determine exactly where this data collected its sample from. This dataset was ideal for our work in that it provides a simple yet comprehensive overview of daily weather in different categories, but it does provide some limitations in that it only extends as far as the end of 2015. While there is some overlap in the years that data was collected for each dataset we are using, it is important to note that it may not provide the most up-to-date picture of the relationship between weather and commute in Seattle. There also is no explicit explanation of the units for variables that show measured values, such as the amount of precipitation or the minimum and maximum temperatures. While something like temperature is more intuitive and easier to infer units for, inference of units used may create inaccurate data or conclusions.
+
+#### Final Dataset
+Our final dataset combines the Burke Gilman Trail counter and Seattle weather datasets to provide a look at the Burke Gilman Trail commuter traffic and Seattle's weather for each day. Each row of the dataset represents one day. There are a total of 730 observations, from January 4, 2014 to December 31, 2015, or roughly two calendar years’ worth of data.
+
+The dataset contains 11 variables, which are as follows: date, total_bikes, total_peds, total_traffic, precipitation, temp_max, temp_min, wind, weather, and median_temp.
+
+Total_bikes and total_peds are the total number of bicyclists and pedestrians, respectively, recorded traveling, in both north and south directions, in one day. Total_traffic is the sum of these two values for one day.
+
+Precipitation, temp_max, temp_min, and wind are the amount of precipitation, maximum temperature, minimum temperature, and wind speed recorded in one day, respectively. Weather is a variable provided by the original Seattle-weather dataset, which categorizes the day's weather as "sun," "rain," "drizzle," "fog," or "snow." Median_temp uses temp_max and temp_min to calculate the day's median temperature.
+
+Season uses the date variable to categorize each day as being within "Autumn," "Winter," "Spring," or "Summer."
+
+There are around 22 implausible values in our dataset, from November 15 to December 6, 2015. On all days except one, which recorded 2 pedestrians, the counts for the number of bikes and pedestrians are zero. It is unclear whether these numbers are truly missing, and what their cause is. Perhaps the recording was faulty during this period, the trail was under construction or otherwise inaccessible, or there truly were no commuters on these days. As it is not indicated in the original documentation how missing values are recorded, we have no way of knowing the accuracy of these values.
+
+### Methods
+#### Variables
+When combining our two datasets, we retained all of the original weather data without making modifications, and we performed summary statistics on most of the trail data. Both datasets contained a date variable, which was important to keep, as it was what allowed us to merge the two together. The trail data, however, also contained hourly data, which wasn't useful for the questions that we were trying to answer in our analysis, so we opted not to include this. This meant that we couldn't look at hourly trends, which was something we had originally considered. We also opted to look at the total bike and pedestrian traffic for each day without regard to the direction commuters were traveling in, which was something recorded in the original data.
+
+We were more interested in the overall picture of traffic on the Burke Gilman, so we decided that the direction of travel wasn't something we would analyze. A possible trade-off of combining the north and south traffic data is that we may have captured individuals on both sides of their commute to and from their destination, but this wasn't an issue for our analysis. Our work was focused on the total traffic seen in a day, not the number of individual people who chose to use the trail, and even if the data had remained un-combined, there would be no way of knowing if each recorded commuter was a unique individual or someone seen earlier in the day.
+
+In addition to variables that came directly from the original datasets, we also added two variables of our own, season and median temperature. Adding season was an important decision in our analysis, as it allowed us to track seasonal trends in addition to the impacts of weather. Seasons have their own typical weather patterns, so variances in seasonal trail activity would likely be indicative of broader weather preferences among trail users, which we thought would be interesting to analyze. We chose to add a median temperature variable as well, since the only temperature data we were given was the minimum and maximum temperature recorded in a day. Minimum and maximum temperatures provided a look at the temperature range for the day, but we wanted to be able to look at a singular temperature variable that would provide similar insight, so we opted to find the median. This likely isn't the most accurate look at the day's overall temperature, but as we only had two temperature variables to work with, we weren't able to use something like mode or average.
+
+#### Data Processing
+##### Seattle Weather Dataset
+```{r}
+sea_weather <- read_delim("project-data/seattle-weather.csv")
+head(sea_weather, 3)
+```
+
+The Seattle weather dataset did not require any modifications for our purposes, so we merely loaded the dataset and left it as-is.
+
+##### Burke Gilman Trail Dataset
+```{r}
+burke <- read_delim("project-data/Burke_Gilman_Trail_Counter.csv")
+# convert date column from chr to mdy format (same format as sea_weather)
+burke$Date <- as.Date(burke$Date, format = "%m/%d/%Y")
+# change column names so they don't have spaces
+colnames(burke) <- c("Date", "Total", "PedS", "PedN", "BikeN", "BikeS")
+# group by day
+# combine north and south data for bikes and pedestrians
+burke <- burke %>%
+    group_by(Date) %>%
+    summarize(
+        total_bikes = sum(BikeN + BikeS, na.rm = TRUE),
+        total_peds = sum(PedN + PedS, na.rm = TRUE),
+        total_traffic = sum(Total, na.rm = TRUE)
+    )
+head(burke, 3)
+```
+
+We did, however, need to modify our Burke Gilman Trail data. The first step we took in processing this data was converting the hourly data to daily data. The date variable in this dataset was stored as a string, so we used lubridate to convert the string to a month-day-year format date type. We chose this specific date format to match that of the weather data. We then modified the column names to remove any spaces from them, so that we could call the columns by name more easily. After removing the hourly timestamps, however, each row of the dataset still represented one hour, so we then grouped the data by day and summarized the bike, pedestrian, and total traffic counts for each day. When summarizing the bike and pedestrian counts, we used the summarize function to combine the north and south count data for each type of commuter. These changes left us with a dataset where each row represented one day, which made it ideal for combining with the weather dataset, and where we only had three traffic count variables, as opposed to the original five, which made looking at the overall traffic for each commuter type much simpler.
+
+##### Combining Datasets
+```{r}
+# merge datasets together by date
+merged_data <- inner_join(burke, sea_weather, by = c("Date" = "date"))
+# made capitalization of variable names the same
+colnames(merged_data)[1] <- "date"
+# function to calculate median temp
+calculate_daily_median_temp <- function(max_temp, min_temp) {
+  median(c(max_temp, min_temp), na.rm = TRUE)
+}
+# create median temp and season variables
+merged_data <- merged_data %>% 
+  mutate(
+    median_temp = pmap_dbl(list(temp_max, temp_min),
+                           calculate_daily_median_temp),
+    season = case_when(
+      month(date) %in% c(3, 4, 5) ~ "Spring",
+      month(date) %in% c(6, 7, 8) ~ "Summer",
+      month(date) %in% c(9, 10, 11) ~ "Autumn",
+      month(date) %in% c(12, 1, 2) ~ "Winter",
+      TRUE ~ NA_character_
+    )
+  )
+head(merged_data, 3)
+```
+
+We chose to merge our datasets using inner_join, as this allowed us to get rid of any dates that didn't have weather or traffic data. These days were unimportant for our analysis and would have been tedious to work around, so we opted for excluding them. From there, we modified the date column name to be lowercase to make all column name conventions cohesive.
+
+Once our datasets were combined, we needed to create our additional numerical and categorical variables, median temperature and season. We chose to create a function for calculating the median temperature, which wasn't strictly necessary, but we found it made the code within our pipe more readable. For determining the season, we decided to base this determination off of the month, rather than going by the exact start and end dates for each season. These dates vary by year, and using the month served our purpose just as well as the more complicated process of going by exact date would, since we were interested in the general pattern for each season.
+
+We had originally included other categorical variables, but decided to exclude them. One such variable was a precipitation category, to indicate the amount of rain in a day, but this felt redundant, as we already had the precipitation and the weather variables to tell us if a day was rainy, drizzling, or sunny. We also had traffic and wind categories, but we ended up not using these in our analyses and graphs, so we removed them from the dataset.
+
+```{r}
+# create a simplified version of the data
+summarized_data <- merged_data %>% 
+  summarize(
+    date,
+    total_bikes,
+    total_peds,
+    total_traffic,
+    season,
+    weather,
+    median_temp
+  )
+head(summarized_data, 3)
+```
+
+We opted to exclude some of the numerical weather variables when creating the summarized version of our dataset. Because we had categorical variables like weather, which told us the day's overall weather, we decided that variables like the exact amount of precipitation were alright to exclude here. If a day's weather was categorized with "rain," one could assume that the precipitation for that day was higher than a day categorized as "sun." The summarized dataset allowed us to quickly see a day's traffic in relation to the season, weather, and temperature.
+
+#### Sample Selection
+We are interested in understanding the trail use patterns of Seattleites and our peers at the UW as a whole, but analyzing every trail used by these groups would be a larger scale than we have capacity for. We limited our scope to looking solely at the Burke Gilman Trail, as this is a trail that is very popular to use in Seattle, and it runs through campus, so UW students, staff, and faculty are likely to be familiar with it. Our sample was also limited to the days between January 4, 2014 and December 31, 2015, as this was the period of overlap between the trail and weather data. This period of time is not the most up-to-date or ideal, but we were unable to find more recent weather data that was as comprehensive as we would have liked.
+
+#### Technical Decisions
+Both the trail and weather data lacked true missing values, but we did encounter the issue of the implausible traffic counts in November and December of 2015. The source page of the trail data made no indication of how missing was recorded. Upon doing some research about construction and trail closures in winter 2015, it seems possible that there was construction, causing a detour route to be needed, but this is merely an unconfirmed inference. While we cannot say for certain whether this data was missing, inaccurately recorded, or a true reflection of the traffic during this period, we did choose to keep these values in our dataset. If the data is missing or inaccurate, it does run the risk of interfering with our analysis, but given that there was no confirmation of the data being missing or inaccurate, we decided to include it.
+
+### Results
+**Graph 1**
+```{r}
+long_merged_data <- merged_data %>% 
+  rename(bikes = total_bikes, pedestrians = total_peds) %>% 
+  pivot_longer(c("bikes", "pedestrians"),
+               names_to = "type",
+               values_to = "traffic")
+
+long_merged_data %>%
+  ggplot(aes(date, traffic, col = type)) +
+  geom_point(size=0.25) +
+  geom_smooth(se=FALSE) +
+  labs(x = "Date",
+       y = "Daily Traffic",
+       col = "Type of Commuter",
+       title = "Daily Traffic by Type of Commuter") +
+  theme_minimal()
+```
+
+In Graph 1, we created a time series plot that shows the daily traffic by bikes and pedestrians from 2014 to the beginning of 2016. The pedestrian trend line is pretty consistent, while the bike trend line fluctuates significantly depending on the season. Bike traffic peaks in summer and goes lower during winter. Despite the consistency of the pedestrian traffic, there is generally more daily traffic by bikes compared to pedestrians.
+
+**Graph 2**
+```{r}
+avg_traffic_vs_weather <- merged_data %>%
+  group_by(weather) %>%
+  summarize(avg_bikes = mean(total_bikes, na.rm = TRUE),
+              avg_peds = mean(total_peds, na.rm = TRUE)) %>% 
+  rename(bikes = avg_bikes, pedestrians = avg_peds)
+
+avg_traffic <- merged_data %>% 
+  summarize(avg_peds = mean(total_peds), avg_bikes = mean(total_bikes))
+
+avg_peds <- as.double(avg_traffic[1,1])
+avg_bikes <- as.double(avg_traffic[1,2])
+
+avg_bikes_vs_weather <- avg_traffic_vs_weather %>% 
+  summarize(weather, bikes)
+
+avg_peds_vs_weather <- avg_traffic_vs_weather %>% 
+  summarize(weather, pedestrians)
+```
+
+```{r}
+avg_peds_vs_weather %>% 
+  ggplot(aes(weather, pedestrians, fill=weather)) + 
+  geom_col() +
+  geom_hline(yintercept = avg_peds, linetype = "dashed") +
+  labs(title = "Average Daily Pedestrian Traffic by Weather Type",
+       x = "Weather", y = "Average Daily Pedestrian Traffic") +
+  theme_minimal()
+```
+
+**Graph 3**
+```{r}
+avg_bikes_vs_weather %>% 
+  ggplot(aes(weather, bikes, fill=weather)) + 
+  geom_col() +
+  geom_hline(yintercept = avg_bikes, linetype = "dashed") +
+  labs(title = "Average Daily Bike Traffic by Weather Type",
+       x = "Weather", y = "Average Daily Bike Traffic") +
+  theme_minimal()
+```
+
+In Graphs 2 and 3, we used bar plots to show the average daily bike and pedestrian traffic by weather type respectively. The dashed line on each graph represents the average amount of daily bike and pedestrian traffic, respectively. In Graph 2, it appears there is more bike traffic when it is drizzling, followed by sunny weather. We can see a significant drop when the weather is snowy and rainy. In Graph 3, average daily pedestrian traffic appears to be more consistent. There is the most traffic when it is drizzling again, closely followed by sunny weather. Rainy weather has the lowest average daily pedestrian traffic.
+
+**Graph 4**
+```{r}
+rainy_data <- merged_data[merged_data$weather == "rain" | merged_data$weather == "sun",]
+ggplot(rainy_data, aes(x = temp_max, y = total_traffic, color = weather)) +
+    geom_point() +
+    # geom_smooth(method = "lm") +
+    labs(title = "Interaction of Temperature and Commuter Counts on Rainy Days",
+         x = "Maximum Temperature (°C)",
+         y = "Total Commuters")
+```
+
+In Graph 4, we created a scatter plot to observe the interaction between temperature and total commuter counts. We compared sunny and rainy weather. It appears with the increased temperature, the number of total commuters increases as well. The number of total commuters go over 4000 in sunny weather and the maximum number of total commuters is about 3000 in rainy weather. So, there is a positive correlation between temperature and total commuters. Despite temperature increasing the amount of commuters, warm sunny days still have higher traffic than warm rainy days.
+
+**Graph 5**
+```{r}
+ggplot(merged_data, aes(x = temp_max, y = total_traffic, color = weather)) +
+  geom_line() +
+  labs(title = "Interaction of Temperature and Weather Condition on Commuter Counts",
+       x = "Maximum Temperature (°C)",
+       y = "Total Commuters") +
+  scale_color_manual(values = c("#248232", "#191923", "#0e79b2", "#bf1363", "#f39237")) +
+  theme_minimal()
+```
+
+Graph 5 is an extended form of Graph 4. We used a multi-line chart to show all weather conditions instead of just sunny and rany weather  It appears sunny weather has the most number of total commuters, followed by fog, drizzle and snow. Rainy weather has the least amount of total commuters.
+
+**Graph 6**
+```{r}
+special_occasions <- merged_data %>%
+  filter(date %in% c("2014-01-01", "2014-07-04", "2014-09-04", "2014-11-23", "2014-12-25",
+                     "2015-01-01", "2015-07-04", "2015-09-04", "2015-11-23", "2015-12-25")) %>%
+  group_by(date) %>%
+  summarize(average_traffic = mean(total_traffic, na.rm = TRUE))  
+
+special_occasions$date <- as.factor(special_occasions$date)
+
+special_occasions %>% 
+  ggplot(aes(x = date, y = average_traffic)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Total Traffic by Special Occasions",
+       x = "Special Occasions",
+       y = "Average Total Traffic") +
+  scale_x_discrete(labels = c("2014-01-01", "2014-07-04", "2014-09-04", "2014-11-23", "2014-12-25",
+                              "2015-01-01", "2015-07-04", "2015-09-04", "2015-11-23", "2015-12-25"))
+```
+
+In Graph 6, we used a bar plot to observe how average total traffic changes on specific dates.We compared major US holidays, and it appears there is the highest average total traffic on the 4th of July.
+
+### Findings
+#### Meaning
+One of the first things we looked at was the general traffic flow on the Burke Gilman Trail. Looking at daily bike and pedestrian traffic counts over the course of two years, we saw that pedestrian commuter numbers remain rather consisten throughout the year, and that the number of bikes often well exceeds the number of pedestrians, but that this number drastically increases in the summer. Increased traffic in the summer could be due to a variety of reasons, such as longer daylight hours, summer break, or increased travel to the area, but in the realm of our data, weather is likely also an important determining factor in this traffic increase. Summer tends to have much warmer, sunnier weather than the other seasons.
+
+As shown in our graphs examining the effects of temperature and precipitation on commuter flow, trail use was the highest on days that were both warm and sunny. While we observed that there is a positive correlation between temperature and trail users, there is still an obvious increase in trail use when the weather is both warm and sunny, as opposed to days where it was warm but rainy. We think this is because people tend to be more hesitant to go outside in wet weather, particularly when they are going outside to perform an activity such as biking, which can become uncomfortable or even unsafe when you are wet.
+
+When comparing multiple types of weather together, not just sun and rain, sunny weather was still the most popular time to use the trail. There were only two snowy days in our sample, and we were surprised to see that these two days did not have the lowest amount of commuter traffic. We believe this may be due to the period of time where the trail counter recorded no traffic for a total of 22 days, most of which were not snowy. Other potential reasons that snowy days had more traffic than some of the rainy, foggy, and sunny days are that snowfall was light, excitement about seeing the first snow, the season in which the snowy dates occured (like in fall as opposed to winter), etc.
+
+We also looked at how different types of weather impact bikes and pedestrians individually. We compared average traffic rates for each type of commuter in each type of weather to the overall average traffic for that type of commuter over the course of two years. Pedestrian traffic levels didn't vary much from the overall average, even in adverse weather conditions. Traffic increased slightly during drizzly and sunny weather, and decreased during rainy and snowy weather, but not too significantly. Among bikers, however, sunny and drizzly weather significantly increased the amount of traffic, and rain and snow saw much lower traffic levels than the average. We think that the more drastic impact on bikers is due to the way that snowy and rainy weather impacts bikers' ability to safely and comfortably commute. Biking in the rain and snow is much harder and uncomfortable than when it is sunny, and bikers may not have appropriate rain gear. There is also a lot higher risk of traffic accidents in the snow and rain, so commuters may be taking extra precautions. A lack of weather-proofing along the trail may also contribute to a decrease in bike traffic.
+
+Finally, we looked at how holidays affect the commuter flow. We were surprised to see that holidays still seemed to pretty strictly adhere to the seasonal traffic patterns. Summer holidays like July 4th had the highest traffic, fall holidays had lower traffic, and winter holidays had the lowest traffic. We also looked at nationally recognized holidays, so each of these holidays is a day that people would typically have the day off of work, so it isn't likely that commuter traffic remained high on the 4th of July because people didn't have the day off. It seems that season and its associated weather patterns are the biggest determining factor in how people choose to commute.
+
+#### Limitations
+As we are interested in the commuting patterns of Seattleites and those on UW Seattle's campus, we chose to use the Burke Gilman Trail because it is a popular trail that runs through UW Seattle. However, the conditions and popularity of the Burke Gilman Trail are not guaranteed to be the same as other trails in the Seattle area, and not every UW commuter utilizes this trail, and even less so at the exact location the traffic data was selected. Using the data at this location allows us to infer overall trail usage patterns by Seattle and UW commuters, but we couldn't state for certain that the patterns recorded in this analysis are true at a larger scale. Traffic patterns are likely to differ by location, so what applies here likely will not apply everywhere else.
+
+Additionally, our data is from 2014-2015. As such, our analysis likely doesn't match up with current patterns of trail usage. Weather patterns may have shifted, traffic levels may have changed on the trail, weather-proofing infrastructure may have been added to the trail, or other factors may have created new patterns that don't align with what we saw in our data analysis. Our analysis provides a look at traffic and weather patterns for 2014-2015, but likely doesn't match up exactly with what one would see were this to be repeated with 2022-2023 data.
+
+Our data provides a good look at the Burke Gilman in 2014-2015, and could probably be used to give a loose, general look at how weather informs commuting choices, but it probably wouldn't be wise to say the patterns here are true everywhere.
+
+#### Future Directions
+In order to extend our story further, we can do several things. Firstly, we could add data from several more years to see trends over a longer period of time, particularly more recent years. This longer-term analysis could unveil patterns and trends that might not be immediately apparent within a single year's data. Furthermore, we could look at different parts of the Burke Gilman Trail or different trails in other areas of Seattle. This would help us compare how many people use the trails, how the seasons affect them, and how weather influences things in different areas. Additionally, we could find datasets that engage with trail users through surveys or interviews, which can help us to gather insights into their decision-making process regarding trail usage during varying weather conditions. Understanding why individuals opt to use the trail in different types of weather would provide a deeper understanding of commuter preferences and behaviors. This knowledge would enable us to better understand the factors influencing commuters' choices and help inform future planning and decision-making regarding trail infrastructure and services.
+
+### Summary
+#### Seasonal Variations
+We saw in our analysis that favorable and unfavorable weather conditions influence commuter traffic. Typically in spring and summer (favorable weather), there was an increased number of commuters on the trail. This can be related to having longer daylight hours during spring and summer in addition to the weather. Also, most people have more free time in the summer, so they can enjoy the trail without rushing. 
+
+#### Weather Impacts
+Weather conditions are very important in commuter behavior. Weather conditions, such as rain, snow, and fog can make commuters feel unsafe and uncomfortable to use the trail, which results in a decrease in the number of total commuters. People usually make adaptive choices depending on the weather. For example, they can decide to use public transportation in rainy or snowy weather instead of using the trail. Bikers in particular and adversely affected by more extreme, wet weather.
+
+#### Holiday Trends
+Although some special days, such as July 4, seem to have an impact on the total number of commuter traffic, it appears seasons have more impact than the holiday dates themselves. People usually follow seasonal trends even on a holiday.
+
+#### Infrastructure Planning and Promoting Trail Usage
+So far we have discussed how significantly weather and seasonality impact the total number of commuters on the trail. Using this data and analysis, commuters can become informed of how weather affects the traffic flow, and use this to pick less congested times on the trails or even to change their behavior to match that of other trail users. It may encourage them to use alternate forms of transportation, particularly when it is raining, such as taking public transit instead of walking or biking. City planners might use this analysis to inform decisions about increasing Seattle trails' weather-proofing infrastructure and keeping trails well-lit, so that commuters can travel safely in all types of weather. They can also highlight the benefits of trail use during the peak season, and provide tips to local commuters on how to overcome adverse weather, whether through informing them of safe pratices, recommending appropriate gear, or offering alternative transit.
+
+### Sources
+[Kaggle](https://www.kaggle.com/datasets/mahdiehhajian/seattle-weather)
+
+[Peopleforbikes](https://www.peopleforbikes.org/news/working-to-ungap-seattles-bike-map)
+
+[ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S1361920918302591#:~:text=The%20daily%20walking%20on%20the,respectively)
+
+[Seattle Open Data](https://data.seattle.gov/Transportation/Burke-Gilman-Trail-north-of-NE-70th-St-Bicycle-and/2z5v-ecg8)
